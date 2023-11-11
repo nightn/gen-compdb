@@ -11,7 +11,7 @@ const jsonConfig = {
 }
 
 const name = 'gen-compdb';
-const version = '1.0.0';
+const version = '1.0.1';
 const examples = [
   `> ${name} -d /my/project/dir -o "-I. -Ih -I/xxlib/include -c --save-temps" foo.c bar.c`,
   `# This command will generate compile_commands.json containing the following lines:`,
@@ -59,11 +59,11 @@ function main() {
   dbg = opts.debug || false;
   const files = program.args;
   const compiler = opts.compiler || defaultCompiler;
-  const inputOptions = opts.opt;
+  const inputOptions = normalizeOptions(opts.opt);
   if (files.length === 0) {
     error('no input files');
   }
-  debug(opts);
+  debug(`options: ${inputOptions}`);
   const arr = [];
   for (const file of files) {
     const cmd = `${compiler} ${inputOptions} ${file}`;
@@ -76,6 +76,14 @@ function main() {
   }
   fs.writeFileSync(output, jsonFormat(arr, jsonConfig));
   console.log(`${output} generated!`);
+}
+
+function replaceAll(s, oldStr, newStr) {
+  return s.split(oldStr).join(newStr);
+}
+
+function normalizeOptions(options) {
+  return replaceAll(options, '\n', ' ');
 }
 
 main();
